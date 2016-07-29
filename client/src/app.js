@@ -16,27 +16,25 @@ var Flight = require('./models/flights/flight');
 window.onload= function(){
   console.log('good so far');
 
+  var festival = new Festival();
+  var airport = new Airport();
   var flight = new Flight();
 
-  flight.onUpdate = function (flights){
-    console.log("flights: ", flights);
-  }
+  festival.getFestivals();
 
-  var airport = new Airport();
+  festival.onUpdate = function(festivals){
+    console.log("festivals: ", festivals);
+    airport.getAirports();
+  }
 
   airport.onUpdate = function(airports){
     console.log("airports: ", airports);
     flight.getFlights();
   }
 
-  var fest = new Festival();
-
-  fest.onUpdate = function(festivals){
-    console.log("festivals: ", festivals);
-    airport.getAirports();
-  }
-  
-  fest.getFestivals();
+  flight.onUpdate = function (flights){
+    console.log("flights: ", flights);
+  } 
 
 }
 
