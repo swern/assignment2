@@ -47,6 +47,7 @@
 	// var View = require('./view/view.js');
 	var Festival = __webpack_require__(1);
 	var Airport = __webpack_require__(2);
+	var Flight = __webpack_require__(3);
 	
 	// var user = require('./user/user.js');
 	
@@ -61,28 +62,28 @@
 	window.onload= function(){
 	  console.log('good so far');
 	
+	  var flight = new Flight();
+	
+	  flight.onUpdate = function (flights){
+	    console.log("flights: ", flights);
+	  }
+	
 	  var airport = new Airport();
+	
 	  airport.onUpdate = function(airports){
 	    console.log("airports: ", airports);
+	    flight.getFlights();
 	  }
 	
 	  var fest = new Festival();
+	
 	  fest.onUpdate = function(festivals){
-	    console.log(festivals);
-	    airport.getAirports("festivals: ", festivals);
+	    console.log("festivals: ", festivals);
+	    airport.getAirports();
 	  }
 	  
 	  fest.getFestivals();
-	 
 	
-	
-	
-	  //fest.onUpdate = function(festivals){
-	    // do some DOM view stuf
-	    //list out the festivals on a page
-	    //do some data cleaning
-	    //festivalView.showFestivals(festivals);
-	    //get all the airports for the festival
 	}
 	
 
@@ -108,11 +109,9 @@
 	      if (request.status === 200){
 	        var jsonString = request.responseText;
 	        this.festivals = JSON.parse(jsonString)
-	        //console.log(this.festivals);
 	        this.onUpdate(this.festivals);
 	      }
 	    }.bind(this);
-	
 	    request.send(null)
 	    //when it's got the data - call onUpdate(data);
 	  }
@@ -128,13 +127,15 @@
 	var Airport = function() {
 	
 	  this.airports = "";
+	  this.onUpdate= null;
 	
 	};
 	
 	Airport.prototype = {
 	
 	  getAirports: function() {
-	    var url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=55.9486,-3.1999&radius=50000&type=airport&name=airport&key=AIzaSyB13OL9FrPlWcd8p3rZ_ASQy0nNK77R-ow"
+	    var url = "https://iatacodes.org/api/v6/nearby?api_key=0150cf1d-e183-4384-ad90-d4685a0c3454&lat=55.9486&lng=-3.1999&distance=100";
+	    // var url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=55.9486,-3.1999&radius=50000&type=airport&name=airport&key=AIzaSyB13OL9FrPlWcd8p3rZ_ASQy0nNK77R-ow"
 	    var request = new XMLHttpRequest();
 	    request.open("GET",url);
 	    request.setRequestHeader("Content-Type", "application/json")
@@ -142,9 +143,9 @@
 	      if (request.status === 200){
 	        var jsonString = request.responseText;
 	        this.airports = JSON.parse(jsonString)
-	        console.log(this.airports)
+	        this.onUpdate(this.airports)
 	      }
-	    }
+	    }.bind(this)
 	    request.send(null)
 	    //when it's got the data - call onUpdate(data);
 	
@@ -153,6 +154,34 @@
 	};
 	
 	module.exports = Airport;
+
+/***/ },
+/* 3 */
+/***/ function(module, exports) {
+
+	var Flight = function(){
+	  this.flights = "";
+	  this.onUpdate= null;
+	
+	}
+	
+	Flight.prototype = {
+	  getFlights: function(){
+	    var url = "http://partners.api.skyscanner.net/apiservices/browsedates/v1.0/GB/GBP/en-GB/LON/JFK/2016-08-03/2016-08-05?apiKey=fl366429978355658452366133652739"
+	    var request = new XMLHttpRequest();
+	    request.open("GET",url);
+	    request.onload = function(){
+	      if (request.status === 200){
+	        var jsonString = request.responseText;
+	        this.flights = JSON.parse(jsonString)
+	        this.onUpdate(this.flights)
+	      }
+	    }.bind(this)
+	    request.send(null)
+	  }
+	};
+	module.exports = Flight;
+
 
 /***/ }
 /******/ ]);

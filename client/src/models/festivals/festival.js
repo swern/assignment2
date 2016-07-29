@@ -15,11 +15,9 @@ Festival.prototype = {
       if (request.status === 200){
         var jsonString = request.responseText;
         this.festivals = JSON.parse(jsonString)
-        //console.log(this.festivals);
         this.onUpdate(this.festivals);
       }
     }.bind(this);
-
     request.send(null)
     //when it's got the data - call onUpdate(data);
   }
