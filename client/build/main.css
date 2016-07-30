@@ -1,0 +1,25 @@
+#map{
+    height: 100%;
+  }
+#wrapper {
+  left: 0px;
+  top: 40px;
+  bottom: 18px;
+  right: 0;
+  position: absolute;
+    }
+#footer {
+    bottom: 0; /* Sit it on the bottom */
+    right: 0;
+    left: 0;
+    position: absolute;
+    width: 100%; /* As wide as it's allowed */
+    }
+#content {
+    top: 1px;
+  bottom: 0px;
+  overflow: auto;
+  position: absolute;
+  left: 0;
+  right: 0;
+    }

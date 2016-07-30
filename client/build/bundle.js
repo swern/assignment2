@@ -44,23 +44,18 @@
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	// var View = require('./view/view.js');
 	var Festival = __webpack_require__(1);
 	var Airport = __webpack_require__(2);
 	var Flight = __webpack_require__(3);
-	
-	// var user = require('./user/user.js');
-	
-	// var state = {
-	//   view: new View(),
-	//   user: new user(),
-	//   latLng: '''',
-	//   map: '',
-	//   markers: []
-	// }
+	var View = __webpack_require__ (4);
 	
 	window.onload= function(){
-	  console.log('good so far');
+	  var view = new View();
+	  view.initialize()  
+	  main()
+	}
+	
+	function main(){
 	
 	  var festival = new Festival();
 	  var airport = new Airport();
@@ -71,16 +66,16 @@
 	  festival.onUpdate = function(festivals){
 	    console.log("festivals: ", festivals);
 	    airport.getAirports();
-	  }
+	  };
 	
 	  airport.onUpdate = function(airports){
 	    console.log("airports: ", airports);
 	    flight.getFlights();
-	  }
+	  };
 	
 	  flight.onUpdate = function (flights){
 	    console.log("flights: ", flights);
-	  } 
+	  }; 
 	
 	}
 	
@@ -111,9 +106,7 @@
 	      }
 	    }.bind(this);
 	    request.send(null)
-	    //when it's got the data - call onUpdate(data);
 	  }
-	
 	}
 	
 	module.exports = Festival;
@@ -145,7 +138,6 @@
 	      }
 	    }.bind(this)
 	    request.send(null)
-	    //when it's got the data - call onUpdate(data);
 	
 	  }
 	
@@ -179,6 +171,34 @@
 	  }
 	};
 	module.exports = Flight;
+
+
+/***/ },
+/* 4 */
+/***/ function(module, exports) {
+
+	var View = function(){
+	  this.map = '';
+	  this.center = '';
+	}
+	
+	View.prototype = {
+	
+	  initialize: function(){
+	
+	    navigator.geolocation.getCurrentPosition(function(position){
+	      this.center = { lat: position.coords.latitude, lng: position.coords.longitude }
+	      var mapDiv = document.getElementById('map');
+	      this.map = new google.maps.Map(mapDiv,{
+	        center:this.center,
+	        zoom: 6
+	      });
+	    })
+	  }
+	}
+	
+	module.exports = View;
+	
 
 
 /***/ }

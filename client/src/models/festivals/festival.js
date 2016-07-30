@@ -19,9 +19,7 @@ Festival.prototype = {
       }
     }.bind(this);
     request.send(null)
-    //when it's got the data - call onUpdate(data);
   }
-
 }
 
 module.exports = Festival;
