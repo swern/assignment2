@@ -50,34 +50,43 @@
 	var View = __webpack_require__ (4);
 	
 	window.onload= function(){
-	  var view = new View();
-	  view.initialize()  
+	 
 	  main()
+	
 	}
 	
 	function main(){
 	
 	  var festival = new Festival();
-	  var airport = new Airport();
-	  var flight = new Flight();
+	  var flight = new Flight(); 
+	  var view = new View();
+	  //view.initialize() 
+	  getFlightFestCombo(festival,flight,view)
+	}
+	
+	function getFlightFestCombo(festival,flight,view){
+	  
 	
 	  festival.getFestivals();
 	
+	
 	  festival.onUpdate = function(festivals){
 	    console.log("festivals: ", festivals);
-	    airport.getAirports();
+	    view.showFestivals(festivals);
+	    festivals.results.forEach(function(festival){
+	      var airport = new Airport(festival.venue.latitude.toString(), festival.venue.longitude.toString());
+	      airport.getAirports();
+	      airport.onUpdate = function(airports){
+	        console.log("airports: ", airports);
+	        //flight.getFlights();
+	      };
+	     })
 	  };
 	
-	  airport.onUpdate = function(airports){
-	    console.log("airports: ", airports);
-	    flight.getFlights();
-	  };
-	
-	  flight.onUpdate = function (flights){
-	    console.log("flights: ", flights);
-	  }; 
-	
-	}
+	  // flight.onUpdate = function (flights){
+	  //   console.log("flights: ", flights);
+	  // }; 
+	};
 	
 
 
@@ -86,15 +95,16 @@
 /***/ function(module, exports) {
 
 	var Festival = function(){
-	  this.festivals= ''
-	  //getting festivals
+	  this.festivals = ''
+	  this.minDate = '2016-09-01'
+	  this.maxDate = '2016-09-10'
 	  this.onUpdate = null
 	}
 	
 	Festival.prototype = {
 	
 	  getFestivals: function(){
-	    var url = "http://www.skiddle.com/api/v1/events?api_key=b44ecae0f03d13e3fcf192e4235aef2b&eventcode=FEST&minDate=2016-09-01&maxDate=2016-09-10&limit=100";
+	    var url = "http://www.skiddle.com/api/v1/events?api_key=b44ecae0f03d13e3fcf192e4235aef2b&eventcode=FEST&minDate="+this.minDate+"&maxDate="+this.maxDate+"&limit=100";
 	    var request = new XMLHttpRequest();
 	    request.open("GET",url);
 	    request.setRequestHeader("Content-Type", "application/json")
@@ -115,17 +125,18 @@
 /* 2 */
 /***/ function(module, exports) {
 
-	var Airport = function() {
+	var Airport = function(airLat,airLng) {
 	
 	  this.airports = "";
-	  this.onUpdate= null;
-	
+	  this.airLat = airLat;
+	  this.airLng = airLng;
+	  this.onUpdate = null;
 	};
 	
 	Airport.prototype = {
 	
 	  getAirports: function() {
-	    var url = "https://iatacodes.org/api/v6/nearby?api_key=0150cf1d-e183-4384-ad90-d4685a0c3454&lat=55.9486&lng=-3.1999&distance=100";
+	    var url = "https://iatacodes.org/api/v6/nearby?api_key=0150cf1d-e183-4384-ad90-d4685a0c3454&lat="+this.airLat+"&lng="+this.airLng+" &distance=100";
 	    // var url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=55.9486,-3.1999&radius=50000&type=airport&name=airport&key=AIzaSyB13OL9FrPlWcd8p3rZ_ASQy0nNK77R-ow"
 	    var request = new XMLHttpRequest();
 	    request.open("GET",url);
@@ -178,8 +189,8 @@
 /***/ function(module, exports) {
 
 	var View = function(){
-	  this.map = '';
-	  this.center = '';
+	  this.map = ''
+	  this.center = ''
 	}
 	
 	View.prototype = {
@@ -192,7 +203,27 @@
 	      this.map = new google.maps.Map(mapDiv,{
 	        center:this.center,
 	        zoom: 6
+	      });    
+	    })
+	  },
+	
+	  showFestivals: function(festivals){
+	
+	    navigator.geolocation.getCurrentPosition(function(position){
+	      this.center = { lat: position.coords.latitude, lng: position.coords.longitude }
+	      var mapDiv = document.getElementById('map');
+	      this.map = new google.maps.Map(mapDiv,{
+	        center:this.center,
+	        zoom: 6
 	      });
+	
+	      for (festival of festivals.results){
+	        var pos = { lat: festival.venue.latitude, lng: festival.venue.longitude }
+	        var marker = new google.maps.Marker({
+	           position: pos,
+	           map: this.map,
+	        })
+	      }          
 	    })
 	  }
 	}

@@ -1,13 +1,14 @@
 var Festival = function(){
-  this.festivals= ''
-  //getting festivals
+  this.festivals = ''
+  this.minDate = '2016-09-01'
+  this.maxDate = '2016-09-10'
   this.onUpdate = null
 }
 
 Festival.prototype = {
 
   getFestivals: function(){
-    var url = "http://www.skiddle.com/api/v1/events?api_key=b44ecae0f03d13e3fcf192e4235aef2b&eventcode=FEST&minDate=2016-09-01&maxDate=2016-09-10&limit=100";
+    var url = "http://www.skiddle.com/api/v1/events?api_key=b44ecae0f03d13e3fcf192e4235aef2b&eventcode=FEST&minDate="+this.minDate+"&maxDate="+this.maxDate+"&limit=100";
     var request = new XMLHttpRequest();
     request.open("GET",url);
     request.setRequestHeader("Content-Type", "application/json")
