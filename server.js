@@ -1,14 +1,13 @@
 var express = require('express');
 var app = express();
-//var mongodb = require('mongodb');
-//var MongoClient = require('mongodb').MongoClient;
+var mongodb = require('mongodb');
+var MongoClient = require('mongodb').MongoClient;
 var bodyParser = require('body-parser');
-//var ObjectID = mongodb.ObjectID;
+var ObjectID = mongodb.ObjectID;
 var path = require('path');
 
 app.use(bodyParser.json());
 app.use(express.static('client/build'));
-//var url = 'mongodb://localhost:27017/bucketList';
  
 app.get("/", function(req,res){
   res.sendFile(path.join(__dirname + '/client/build/index.html'));
@@ -32,6 +31,24 @@ app.get("/", function(req,res){
 //     })
 //   })
 // })
+
+
+app.get("/airports/:lat/:lng", function(req,res){
+  console.log(parseInt(req.params.lat));
+  MongoClient.connect('mongodb://localhost:27017/airportsAPI', function(err, db){
+    var collection = db.collection('airports');
+    collection.find( 
+    { 
+      'lat': { '$gte': parseInt(req.params.lat) - 1, '$lte': parseInt(req.params.lat) + 1, '$ne': 0 }, 
+      'lng': {'$gte': parseInt(req.params.lng) - 1, '$lte': parseInt(req.params.lng) + 1, '$ne': 0 } 
+    } 
+    ).toArray(function(err, docs){
+      console.log(docs);
+      res.json(docs);
+      db.close();
+    })
+  })
+})
 
 //   app.delete("/bucketlist/:id", function(req,res){
 //     MongoClient.connect(url, function(err, db){
