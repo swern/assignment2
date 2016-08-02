@@ -63,11 +63,11 @@
 	}
 	
 	function getFlightFestCombo(festival,view){
-	
+	  // var dep= view.getDep() 
 	  festival.getFestivals();
 	
 	  festival.onUpdate = function(festivals){
-	    console.log("festivals: ", festivals);
+	    //console.log("festivals: ", festivals);
 	    view.showFestivals(festivals);
 	
 	    festivals.results.forEach(function(festival){
@@ -76,13 +76,24 @@
 	      airport.getAirports();
 	
 	      airport.onUpdate = function(airports){
+	        var arrAirports = [];
 	
 	        airports.forEach(function(airport){
-	          console.log("airport code: ", airport.code);
-	          var flight = new Flight(airport.code);
+	          console.log("airport: ", airport);
+	          var inboundDate = new Date(festival.date)
+	          inboundDate.setDate(inboundDate.getDate() - 2)
+	          inboundDate = formatDate(inboundDate);
 	
-	          flight.onUpdate = function (flights){
-	             console.log("flights: ", flights);
+	          var outboundDate = new Date(festival.date)
+	          outboundDate.setDate(outboundDate.getDate() + 5)
+	          outboundDate = formatDate(outboundDate);
+	
+	          // console.log ("inbounddate",inboundDate)
+	          var flight = new Flight(airport.code,inboundDate,outboundDate);
+	          flight.onUpdate = function (flight){
+	             airport.flight = flight;
+	             arrAirports.push(airport);
+	             console.log("Airports: ", arrAirports);
 	           }; 
 	          
 	          flight.getFlights();
@@ -95,6 +106,19 @@
 	  };
 	
 	};
+	
+	function formatDate(date) {
+	    var d = new Date(date),
+	        month = '' + (d.getMonth() + 1),
+	        day = '' + d.getDate(),
+	        year = d.getFullYear();
+	
+	    if (month.length < 2) month = '0' + month;
+	    if (day.length < 2) day = '0' + day;
+	
+	    return [year, month, day].join('-');
+	}
+	
 	
 
 
@@ -170,16 +194,19 @@
 /* 3 */
 /***/ function(module, exports) {
 
-	var Flight = function(destination){
+	var Flight = function(destination,inbound, outbound){
 	  this.flights = "";
 	  this.onUpdate= null;
 	  //this.origin = origin;
-	  this.destination = destination
+	  this.destination = destination;
+	  this.inbound = inbound;
+	  this.outbound = outbound;
 	}
 	
 	Flight.prototype = {
 	  getFlights: function(){
-	    var url = "http://partners.api.skyscanner.net/apiservices/browsedates/v1.0/GB/GBP/en-GB/EDI/"+this.destination+"/2016-08-03/2016-08-05?apiKey=fl366429978355658452366133652739"
+	
+	    var url = "http://partners.api.skyscanner.net/apiservices/browsedates/v1.0/GB/GBP/en-GB/EDI/"+ this.destination + "/" + this.inbound + "/"+this.outbound+"?apiKey=fl366429978355658452366133652739";
 	    var request = new XMLHttpRequest();
 	    request.open("GET",url);
 	    request.onload = function(){

@@ -1,5 +1,6 @@
 var assert = require('assert');
-var Analysis =  require('../analysis');
+var FestivalAnalysis =  require('../festival_analysis');
+var FlightAnalysis =  require('../flight_analysis');
 
 
 describe('Analysis', function(){
@@ -153,12 +154,207 @@ describe('Analysis', function(){
       "gateway": false
     }
     ]
+    flightData = {
+      "Dates": {
+        "OutboundDates": [
+        {
+          "PartialDate": "2016-08-30",
+          "QuoteIds": [
+          1,
+          2,
+          3,
+          4
+          ],
+          "Price": 222,
+          "QuoteDateTime": "2016-07-31T01:53:00"
+        }
+        ],
+        "InboundDates": [
+        {
+          "PartialDate": "2016-09-06",
+          "QuoteIds": [
+          3,
+          4,
+          5
+          ],
+          "Price": 222,
+          "QuoteDateTime": "2016-07-31T01:53:00"
+        }
+        ]
+      },
+      "Quotes": [
+      {
+        "QuoteId": 1,
+        "MinPrice": 171,
+        "Direct": true,
+        "OutboundLeg": {
+          "CarrierIds": [
+          1223
+          ],
+          "OriginId": 69968,
+          "DestinationId": 65655,
+          "DepartureDate": "2016-08-30T00:00:00"
+        },
+        "QuoteDateTime": "2016-07-31T04:20:00"
+      },
+      {
+        "QuoteId": 2,
+        "MinPrice": 149,
+        "Direct": false,
+        "OutboundLeg": {
+          "CarrierIds": [
+          7
+          ],
+          "OriginId": 69968,
+          "DestinationId": 65655,
+          "DepartureDate": "2016-08-30T00:00:00"
+        },
+        "QuoteDateTime": "2016-07-31T01:53:00"
+      },
+      {
+        "QuoteId": 3,
+        "MinPrice": 243,
+        "Direct": true,
+        "OutboundLeg": {
+          "CarrierIds": [
+          1223
+          ],
+          "OriginId": 69968,
+          "DestinationId": 65655,
+          "DepartureDate": "2016-08-30T00:00:00"
+        },
+        "InboundLeg": {
+          "CarrierIds": [
+          881
+          ],
+          "OriginId": 65655,
+          "DestinationId": 69968,
+          "DepartureDate": "2016-09-06T00:00:00"
+        },
+        "QuoteDateTime": "2016-08-01T13:12:00"
+      },
+      {
+        "QuoteId": 4,
+        "MinPrice": 222,
+        "Direct": false,
+        "OutboundLeg": {
+          "CarrierIds": [
+          7
+          ],
+          "OriginId": 69968,
+          "DestinationId": 65655,
+          "DepartureDate": "2016-08-30T00:00:00"
+        },
+        "InboundLeg": {
+          "CarrierIds": [
+          881
+          ],
+          "OriginId": 65655,
+          "DestinationId": 69968,
+          "DepartureDate": "2016-09-06T00:00:00"
+        },
+        "QuoteDateTime": "2016-08-01T13:12:00"
+      },
+      {
+        "QuoteId": 5,
+        "MinPrice": 81,
+        "Direct": true,
+        "InboundLeg": {
+          "CarrierIds": [
+          1223
+          ],
+          "OriginId": 65655,
+          "DestinationId": 69968,
+          "DepartureDate": "2016-09-06T00:00:00"
+        },
+        "QuoteDateTime": "2016-08-02T06:08:00"
+      }
+      ],
+      "Places": [
+      {
+        "PlaceId": 65655,
+        "IataCode": "LGW",
+        "Name": "London Gatwick",
+        "Type": "Station",
+        "SkyscannerCode": "LGW",
+        "CityName": "London",
+        "CityId": "LOND",
+        "CountryName": "United Kingdom"
+      },
+      {
+        "PlaceId": 69968,
+        "IataCode": "NAP",
+        "Name": "Naples International",
+        "Type": "Station",
+        "SkyscannerCode": "NAP",
+        "CityName": "Naples",
+        "CityId": "NAPL",
+        "CountryName": "Italy"
+      }
+      ],
+      "Carriers": [
+      {
+        "CarrierId": 7,
+        "Name": "Vueling Airlines"
+      },
+      {
+        "CarrierId": 881,
+        "Name": "British Airways"
+      },
+      {
+        "CarrierId": 1223,
+        "Name": "Meridiana"
+      }
+      ],
+      "Currencies": [
+      {
+        "Code": "GBP",
+        "Symbol": "£",
+        "ThousandsSeparator": ",",
+        "DecimalSeparator": ".",
+        "SymbolOnLeft": true,
+        "SpaceBetweenAmountAndSymbol": false,
+        "RoundingCoefficient": 0,
+        "DecimalDigits": 2
+      }
+      ]
+    }
   })
 
-  it('contain three prices', function(){
-    analysis = new Analysis(festivalData);
-    analysis.getFestivalTicketPrice()
-    assert.equal(2, analysis.festivalPrices.length)
-  })     
+  it('can get festival price', function(){
+    festivalAnalysis = new FestivalAnalysis(festivalData[0]);
+    festivalAnalysis.getFestivalTicketPrice()
+    assert.equal(25, festivalAnalysis.festivalTicketPrice)
+  })
+  
+  it('can get departure date from flightObj',function(){
+    flightAnalysis = new FlightAnalysis(flightData)
+    assert.equal('2016-08-30',flightAnalysis.flightObj.departureDate)
+  })
+
+  it('can get arrival date from flightObj',function(){
+    flightAnalysis = new FlightAnalysis(flightData)
+    assert.equal('2016-09-06',flightAnalysis.flightObj.arrivalDate)
+  })  
+  it('can get departure airport from flightObj',function(){
+    flightAnalysis = new FlightAnalysis(flightData)
+    assert.equal('Naples International',flightAnalysis.flightObj.departureAirport.name)
+  }) 
+  it('can get iata code of arrival airport from flightObj',function(){
+    flightAnalysis = new FlightAnalysis(flightData)
+    assert.equal('LGW',flightAnalysis.flightObj.arrivalAirport.iata)
+  })
+  it('get cheapest quote', function(){
+    flightAnalysis = new FlightAnalysis(flightData)
+    flightAnalysis.createNewQuotesArray()
+    
+  }) 
 
 })
+
+
+
+
+
+
+

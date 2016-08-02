@@ -34,7 +34,6 @@ app.get("/", function(req,res){
 
 
 app.get("/airports/:lat/:lng", function(req,res){
-  console.log(parseInt(req.params.lat));
   MongoClient.connect('mongodb://localhost:27017/airportsAPI', function(err, db){
     var collection = db.collection('airports');
     collection.find( 
@@ -43,7 +42,6 @@ app.get("/airports/:lat/:lng", function(req,res){
       'lng': {'$gte': parseInt(req.params.lng) - 1, '$lte': parseInt(req.params.lng) + 1, '$ne': 0 } 
     } 
     ).toArray(function(err, docs){
-      console.log(docs);
       res.json(docs);
       db.close();
     })
