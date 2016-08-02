@@ -344,12 +344,34 @@ describe('Analysis', function(){
     flightAnalysis = new FlightAnalysis(flightData)
     assert.equal('LGW',flightAnalysis.flightObj.arrivalAirport.iata)
   })
-  it('get cheapest quote', function(){
+  it('can make departure arrival flight combinations', function(){
+    
+  flightAnalysis = new FlightAnalysis(flightData)
+  flightAnalysis.createNewQuotesArray()
+  assert.equal(4,flightAnalysis.newQuotes.length)
+  }) 
+  it('can sort the quotes for a single flight', function(){
     flightAnalysis = new FlightAnalysis(flightData)
     flightAnalysis.createNewQuotesArray()
-    
-  }) 
-
+    flightAnalysis.sortQuotes()
+    // DEFINE THE ASSERT
+    //console.log(flightAnalysis.newQuotes)
+  })
+  it('can find minimum quote', function(){
+    flightAnalysis = new FlightAnalysis(flightData)
+    flightAnalysis.findMinimumQuote()
+    assert.equal(222,flightAnalysis.flightObj.quote.MinPrice)
+  })
+  it('can add departure carrier to flight obj',function(){
+    flightAnalysis = new FlightAnalysis(flightData)
+    flightAnalysis.populateFlightObj()
+    assert.deepEqual('Vueling Airlines',flightAnalysis.flightObj.departureCarriers[0])
+  })
+  it('can add arrival carrier to flight obj', function(){
+    flightAnalysis = new FlightAnalysis(flightData)
+    flightAnalysis.populateFlightObj()
+    assert.deepEqual('British Airways',flightAnalysis.flightObj.arrivalCarriers[0])
+  })
 })
 
 
