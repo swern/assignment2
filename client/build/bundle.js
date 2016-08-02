@@ -40,34 +40,33 @@
 /******/ 	return __webpack_require__(0);
 /******/ })
 /************************************************************************/
-/******/ ([
-/* 0 */
+/******/ ({
+
+/***/ 0:
 /***/ function(module, exports, __webpack_require__) {
 
 	var Festival = __webpack_require__(1);
 	var Airport = __webpack_require__(2);
 	var Flight = __webpack_require__(3);
 	var View = __webpack_require__ (4);
+	var FlightAnalysis = __webpack_require__(143)
+	var FestivalAnalysis = __webpack_require__ (144)
 	
-	window.onload= function(){
-	
-	  main()
-	
+	window.onload = function(){
+	  main();
 	}
 	
 	function main(){
-	
 	  var festival = new Festival(); 
 	  var view = new View();
-	  getFlightFestCombo(festival,view)
+	  getFlightFestCombo(festival, view);
 	}
 	
-	function getFlightFestCombo(festival,view){
+	function getFlightFestCombo(festival, view){
 	  // var dep= view.getDep() 
 	  festival.getFestivals();
 	
 	  festival.onUpdate = function(festivals){
-	    //console.log("festivals: ", festivals);
 	    view.showFestivals(festivals);
 	
 	    festivals.results.forEach(function(festival){
@@ -79,51 +78,53 @@
 	        var arrAirports = [];
 	
 	        airports.forEach(function(airport){
-	          console.log("airport: ", airport);
-	          var inboundDate = new Date(festival.date)
-	          inboundDate.setDate(inboundDate.getDate() - 2)
-	          inboundDate = formatDate(inboundDate);
+	          var inboundDate = new Date(festival.date);
+	          inboundDate.setDate(inboundDate.getDate() + 5);
+	          returnDate = formatDate(inboundDate);
 	
-	          var outboundDate = new Date(festival.date)
-	          outboundDate.setDate(outboundDate.getDate() + 5)
-	          outboundDate = formatDate(outboundDate);
+	          var outboundDate = new Date(festival.date);
+	          outboundDate.setDate(outboundDate.getDate() - 2);
+	          departureDate = formatDate(outboundDate);
 	
-	          // console.log ("inbounddate",inboundDate)
-	          var flight = new Flight(airport.code,inboundDate,outboundDate);
-	          flight.onUpdate = function (flight){
-	             airport.flight = flight;
-	             arrAirports.push(airport);
-	             console.log("Airports: ", arrAirports);
-	           }; 
-	          
+	          var flight = new Flight(airport.code,departureDate,returnDate);
+	
+	          flight.onUpdate = function(flight){
+	            if(flight.Quotes.length){
+	              var cheapestFlight = new FlightAnalysis(flight);
+	              cheapestFlight.populateFlightObj();
+	              airport.flight = cheapestFlight.flightObj;
+	              arrAirports.push(airport);
+	              festival.airport = arrAirports;
+	              console.log(arrAirports)
+	            }
+	          }; 
 	          flight.getFlights();
 	        })
-	
 	      };
-	
 	    })
-	
 	  };
-	
 	};
 	
+	
 	function formatDate(date) {
-	    var d = new Date(date),
-	        month = '' + (d.getMonth() + 1),
-	        day = '' + d.getDate(),
-	        year = d.getFullYear();
+	  var d = new Date(date),
+	  month = '' + (d.getMonth() + 1),
+	  day = '' + d.getDate(),
+	  year = d.getFullYear();
 	
-	    if (month.length < 2) month = '0' + month;
-	    if (day.length < 2) day = '0' + day;
+	  if (month.length < 2) month = '0' + month;
+	  if (day.length < 2) day = '0' + day;
 	
-	    return [year, month, day].join('-');
+	  return [year, month, day].join('-');
 	}
 	
+	//function get
 	
 
 
 /***/ },
-/* 1 */
+
+/***/ 1:
 /***/ function(module, exports) {
 
 	var Festival = function(){
@@ -154,7 +155,8 @@
 	module.exports = Festival;
 
 /***/ },
-/* 2 */
+
+/***/ 2:
 /***/ function(module, exports) {
 
 	var Airport = function(airLat,airLng) {
@@ -168,12 +170,8 @@
 	Airport.prototype = {
 	
 	  getAirports: function() {
-	    // //console.log(this.airLat,this.airLng)
+	
 	    var url = "http://localhost:3000/airports/"+this.airLat+"/"+this.airLng+"";
-	    // // var url = "https://airport.api.aero/airport/nearest/55.9486/-3.1999?maxAirports=10&user_key=3035d833bb6e531654a3cce03e6b1fde";
-	    // var url = "https://airport.api.aero/airport?user_key=3035d833bb6e531654a3cce03e6b1fde";
-	    // // var url = "https://iatacodes.org/api/v6/nearby?api_key=0150cf1d-e183-4384-ad90-d4685a0c3454&lat="+this.airLat+"&lng="+this.airLng+" &distance=100&type=airport";
-	    // // var url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location="+this.airLat+","+this.airLng+"&radius=50000&type=airport&name=airport&key=AIzaSyB13OL9FrPlWcd8p3rZ_ASQy0nNK77R-ow"
 	    var request = new XMLHttpRequest();
 	    request.open("GET",url);
 	    request.setRequestHeader("Content-Type", "application/json")
@@ -191,7 +189,8 @@
 	module.exports = Airport;
 
 /***/ },
-/* 3 */
+
+/***/ 3:
 /***/ function(module, exports) {
 
 	var Flight = function(destination,inbound, outbound){
@@ -224,7 +223,8 @@
 
 
 /***/ },
-/* 4 */
+
+/***/ 4:
 /***/ function(module, exports) {
 
 	var View = function(){
@@ -271,6 +271,148 @@
 	
 
 
+/***/ },
+
+/***/ 143:
+/***/ function(module, exports) {
+
+	var FlightAnalysis = function(flight){
+	  this.flight = flight;
+	  this.flightObj = {
+	    departureDate: this.flight.Dates.OutboundDates[0].PartialDate,
+	    arrivalDate: this.flight.Dates.InboundDates[0].PartialDate,
+	    departureCarriers: [],
+	    arrivalCarriers: [],
+	    departureAirport: {name: this.flight.Places[1].Name, iata: this.flight.Places[1].IataCode},
+	    arrivalAirport: {name: this.flight.Places[0].Name, iata:this.flight.Places[0].IataCode},
+	  }
+	  this.newQuotes=[];
+	}
+	
+	
+	FlightAnalysis.prototype = {
+	
+	  createNewQuotesArray: function(){
+	    var onlyDep = [];
+	    var onlyArr = [];
+	    var quotes = this.flight.Quotes;
+	    for (quote of quotes){
+	      if (quote.OutboundLeg && quote.InboundLeg){
+	         this.newQuotes.push(quote)
+	      } else if (!quote.InboundLeg){
+	        onlyDep.push(quote)
+	      } else if (!quote.OutboundLeg){
+	        onlyArr.push(quote)
+	      }
+	    }
+	
+	    for (depQuote of onlyDep){
+	      for (arrQuote of onlyArr){
+	        depQuote.InboundLeg = arrQuote.InboundLeg;
+	        depQuote.MinPrice = depQuote.MinPrice + arrQuote.MinPrice
+	        //console.log(depQuote)
+	        this.newQuotes.push(depQuote) 
+	      }
+	    }    
+	  },
+	
+	  sortQuotes: function(){
+	    this.newQuotes.sort(function(a, b) {
+	        return parseFloat(a.MinPrice) - parseFloat(b.MinPrice);
+	    });
+	  },
+	
+	  findMinimumQuote: function(){
+	    this.createNewQuotesArray()
+	    this.sortQuotes()
+	    this.flightObj.quote=this.newQuotes[0]
+	  },
+	
+	  populateFlightObj: function(){
+	    this.findMinimumQuote();
+	    for (carrier of this.flight.Carriers){
+	
+	      for(quoteCarrierID of this.flightObj.quote.OutboundLeg.CarrierIds){
+	
+	        if (quoteCarrierID === carrier.CarrierId){
+	          this.flightObj.departureCarriers.push(carrier.Name)
+	          //console.log(carrier.Name)
+	        }
+	      }
+	
+	      for(quoteCarrierID of this.flightObj.quote.InboundLeg.CarrierIds){
+	
+	        if (quoteCarrierID === carrier.CarrierId){
+	          this.flightObj.arrivalCarriers.push(carrier.Name)
+	          //console.log(carrier.Name)
+	        }
+	      } 
+	    }
+	
+	  }
+	}
+	
+	module.exports = FlightAnalysis;
+
+/***/ },
+
+/***/ 144:
+/***/ function(module, exports) {
+
+	var FestivalAnalysis = function(festival) {
+	  this.festival = festival;
+	  this.festivalTicketPrice = 0; 
+	};
+	
+	FestivalAnalysis.prototype = {
+	
+	  getFestivalTicketPrice: function(){
+	    var ticketPrice = this.festival.entryprice;
+	    var regex = /\d+/g;
+	    var stringTicketPrice = ticketPrice;
+	    var numberTicketPrice = stringTicketPrice.match(regex);
+	      if(numberTicketPrice !== null) {
+	         this.festivalTicketPrice = numberTicketPrice[0];
+	       } else {
+	       this.festivalTicketPrice = 0
+	      };
+	  }
+	
+	};
+	
+	module.exports = FestivalAnalysis;
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
 /***/ }
-/******/ ]);
+
+/******/ });
 //# sourceMappingURL=bundle.js.map
