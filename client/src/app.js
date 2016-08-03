@@ -1,9 +1,11 @@
+var async = require ('async');
 var Festival = require('./models/festivals/festival');
 var Airport = require('./models/airports/airport');
 var Flight = require('./models/flights/flight');
 var View = require ('./view/view');
-var FlightAnalysis = require('./models/analysis/flight_analysis')
-var FestivalAnalysis = require ('./models/analysis/festival_analysis')
+var FlightAnalysis = require('./models/analysis/flight_analysis');
+var FestivalAnalysis = require ('./models/analysis/festival_analysis');
+var arrAirports = [];
 
 window.onload = function(){
   main();
@@ -11,26 +13,37 @@ window.onload = function(){
 
 function main(){
   var festival = new Festival(); 
-  var view = new View();
-  getFlightFestCombo(festival, view);
+  var view = new View();  
+  var airport = new Airport();
+  var flight = new Flight();
+
+  airport.onUpdate = function(airports, fest){
+    fest.airports = airports;
+    console.log(fest);
+    flight.getFlights(airports, fest);
+  }
+
+  flight.onUpdate = function(flights, airport, fest){
+    
+    console.log(flights);
+  }
+
+
+  getFlightFestCombo(festival, view, airport, flight);
 }
 
-function getFlightFestCombo(festival, view){
-  // var dep= view.getDep() 
-  festival.getFestivals();
+function getFlightFestCombo(festival, view, airport, flight){
 
   festival.onUpdate = function(festivals){
     view.showFestivals(festivals);
 
-    festivals.results.forEach(function(festival){
+    async.each(festivals.results, function(festival){
 
       var airport = new Airport(festival.venue.latitude.toString(), festival.venue.longitude.toString());
-      airport.getAirports();
-
+     
       airport.onUpdate = function(airports){
-        var arrAirports = [];
-
-        airports.forEach(function(airport){
+     
+        async.each(airports, function(airport){
           var inboundDate = new Date(festival.date);
           inboundDate.setDate(inboundDate.getDate() + 5);
           returnDate = formatDate(inboundDate);
@@ -48,14 +61,19 @@ function getFlightFestCombo(festival, view){
               airport.flight = cheapestFlight.flightObj;
               arrAirports.push(airport);
               festival.airport = arrAirports;
-              console.log(arrAirports)
             }
-          }; 
+       
+          };
           flight.getFlights();
         })
       };
     })
+
+    airport.getAirports(festivals);
   };
+
+
+  festival.getFestivals();
 };
 
 
