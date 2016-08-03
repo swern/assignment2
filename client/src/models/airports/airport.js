@@ -9,17 +9,10 @@ Airport.prototype = {
     console.log("Festivals: ", festivals.results.length);
     var counter = 0;
 
-    // for (var i = 0; i < festivals.results.length; i++) {
-    //   console.log(festivals.results[i].venue.latitude);
-    //   console.log(festivals.results[i].venue.longitude);
-    // }
-
     var thisFest = festivals.results[0];
 
     var recursiveAjax = function(thisFest){
       
-      console.log("recursiveAjax");
-
       var url = "http://localhost:3000/airports/"+thisFest.venue.latitude+"/"+thisFest.venue.longitude;
       var request = new XMLHttpRequest();
       request.open("GET",url);
@@ -31,7 +24,7 @@ Airport.prototype = {
             var jsonString = request.responseText;
             this.airports = JSON.parse(jsonString);
             
-            console.log("counter: ", counter, "festivals.results.length: ", festivals.results.length)
+            //console.log("counter: ", counter, "festivals.results.length: ", festivals.results.length)
 
             if(counter < festivals.results.length){
               this.onUpdate(this.airports, thisFest);

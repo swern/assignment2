@@ -52,79 +52,58 @@
 	var View = __webpack_require__ (4);
 	var FlightAnalysis = __webpack_require__(143);
 	var FestivalAnalysis = __webpack_require__ (144);
-	var arrAirports = [];
+	var allFestivals = [];
+	var map = "";
 	
 	window.onload = function(){
-	  main();
+	  getUserInput()
+	  var form = document.getElementById('form');
+	  form.onsubmit = function(e) {
+	    e.preventDefault();
+	    var depAirport = document.getElementById('departureAirports').value.split('/')[1];
+	    var deptDateInput = document.getElementById('departureDate').value;
+	    var retDateInput = document.getElementById('returnDate').value;
+	
+	    initialize();
+	    main( deptDateInput, retDateInput, depAirport);
+	  }
 	}
 	
-	function main(){
-	  var festival = new Festival(); 
+	function main(departureDate, returnDate, depAirport){
+	  var departureDate = dateFormat(departureDate);
+	  var returnDate = dateFormat(returnDate)
+	  var festival = new Festival(departureDate, returnDate); 
 	  var view = new View();  
 	  var airport = new Airport();
-	  var flight = new Flight();
+	  var flight = new Flight(depAirport);
 	
 	  airport.onUpdate = function(airports, fest){
 	    fest.airports = airports;
-	    console.log(fest);
 	    flight.getFlights(airports, fest);
 	  }
 	
 	  flight.onUpdate = function(flights, airport, fest){
-	    
-	    console.log(flights);
+	    flightAnalysis = new FlightAnalysis(flights);
+	    flightAnalysis.populateFlightObj()
+	    airport.flights = flightAnalysis.flightObj;
+	    console.log(fest);
+	    // view.showFestivals(fest);
+	    console.log("map: ", map);
+	    addMarker(fest, map);
+	
 	  }
-	
-	
 	  getFlightFestCombo(festival, view, airport, flight);
 	}
 	
 	function getFlightFestCombo(festival, view, airport, flight){
-	
 	  festival.onUpdate = function(festivals){
-	    view.showFestivals(festivals);
-	
-	    async.each(festivals.results, function(festival){
-	
-	      var airport = new Airport(festival.venue.latitude.toString(), festival.venue.longitude.toString());
-	     
-	      airport.onUpdate = function(airports){
-	     
-	        async.each(airports, function(airport){
-	          var inboundDate = new Date(festival.date);
-	          inboundDate.setDate(inboundDate.getDate() + 5);
-	          returnDate = formatDate(inboundDate);
-	
-	          var outboundDate = new Date(festival.date);
-	          outboundDate.setDate(outboundDate.getDate() - 2);
-	          departureDate = formatDate(outboundDate);
-	
-	          var flight = new Flight(airport.code,departureDate,returnDate);
-	
-	          flight.onUpdate = function(flight){
-	            if(flight.Quotes.length){
-	              var cheapestFlight = new FlightAnalysis(flight);
-	              cheapestFlight.populateFlightObj();
-	              airport.flight = cheapestFlight.flightObj;
-	              arrAirports.push(airport);
-	              festival.airport = arrAirports;
-	            }
-	       
-	          };
-	          flight.getFlights();
-	        })
-	      };
-	    })
-	
 	    airport.getAirports(festivals);
 	  };
-	
-	
 	  festival.getFestivals();
 	};
 	
 	
-	function formatDate(date) {
+	function dateFormat(date) {
 	  var d = new Date(date),
 	  month = '' + (d.getMonth() + 1),
 	  day = '' + d.getDate(),
@@ -136,7 +115,106 @@
 	  return [year, month, day].join('-');
 	}
 	
-	//function get
+	function getUserInput(){
+	    
+	  var userInput = document.getElementById('departureAirports');
+	  // userInput.onchange = this.save;
+	  userInput.onkeyup = search;
+	}
+	
+	function search(){
+	
+	  var populateOptions = function(data){
+	
+	    var datalist = document.getElementById('datalist');
+	    datalist.innerHTML = "";
+	    data.Places.forEach(function(place){
+	
+	      var option = document.createElement('option')
+	      option.text = place.PlaceId;
+	      option.value = place.PlaceName + "/" + place.PlaceId;
+	      datalist.appendChild(option);
+	      this.departureAirport = option.text;
+	    })
+	  }
+	
+	  var getLocations = function(query){
+	
+	    var url = "http://partners.api.skyscanner.net/apiservices/autosuggest/v1.0/GB/GBP/en-GB?query=" + query + "&apiKey=fl366429978355658452366133652739";
+	    var request = new XMLHttpRequest();
+	    request.open('GET', url);
+	    request.onload = function(){
+	      if(request.status === 200){
+	        var jsonString = request.responseText;
+	        var locations = JSON.parse(jsonString);
+	        populateOptions(locations);
+	      }
+	    }
+	    request.send(null);
+	  }
+	
+	  var queryTerm = document.getElementById('departureAirports').value;
+	
+	  if(queryTerm.length > 0){
+	    getLocations(queryTerm);
+	  }
+	}
+	
+	function initialize(){
+	
+	   navigator.geolocation.getCurrentPosition(function(position){
+	    var center = { lat: position.coords.latitude, lng: position.coords.longitude }
+	    var mapDiv = document.getElementById('map');
+	    map = new google.maps.Map(mapDiv,{
+	      center:center,
+	      zoom: 3
+	    });  
+	  })
+	
+	}
+	
+	function addMarker(festival, map) {
+	
+	  var pos = { lat: festival.venue.latitude, lng: festival.venue.longitude }
+	
+	  var marker = new google.maps.Marker({
+	    position: pos,
+	    map: map
+	  })
+	
+	  marker.addListener('click',function(){
+	     var infoWindow = new google.maps.InfoWindow({
+	      content: festival.eventname
+	     })
+	     infoWindow.open(map, marker)
+	     showDetailedView(festival)
+	  })
+	
+	}
+	
+	function showDetailedView(festival) {
+	
+	  var table = document.getElementById('table');
+	
+	  var row1 = table.insertRow(0);
+	  // var row2 = table.insertRow(1);
+	
+	  var cell1 = row1.insertCell(0);
+	  var cell2 = row1.insertCell(1);
+	  var cell3 = row1.insertCell(2);
+	  
+	  // var cell3 = row2.insertCell(0);
+	  // var cell4 = row2.insertCell(1);
+	
+	  cell1.innerHTML = festival.eventname;
+	  cell2.innerHTML = festival.entryprice;
+	  cell3.innerHTML = festival.date;
+	
+	
+	  detailedView.appendChild(table);
+	
+	}
+	
 	
 
 
@@ -145,11 +223,11 @@
 /***/ 1:
 /***/ function(module, exports) {
 
-	var Festival = function(){
-	  this.festivals = ''
-	  this.minDate = '2016-09-01'
-	  this.maxDate = '2016-09-10'
-	  this.onUpdate = null
+	var Festival = function(minDate,maxDate){
+	  this.festivals = '';
+	  this.minDate = minDate;
+	  this.maxDate = maxDate;
+	  this.onUpdate = null;
 	}
 	
 	Festival.prototype = {
@@ -188,17 +266,10 @@
 	    console.log("Festivals: ", festivals.results.length);
 	    var counter = 0;
 	
-	    // for (var i = 0; i < festivals.results.length; i++) {
-	    //   console.log(festivals.results[i].venue.latitude);
-	    //   console.log(festivals.results[i].venue.longitude);
-	    // }
-	
 	    var thisFest = festivals.results[0];
 	
 	    var recursiveAjax = function(thisFest){
 	      
-	      console.log("recursiveAjax");
-	
 	      var url = "http://localhost:3000/airports/"+thisFest.venue.latitude+"/"+thisFest.venue.longitude;
 	      var request = new XMLHttpRequest();
 	      request.open("GET",url);
@@ -210,7 +281,7 @@
 	            var jsonString = request.responseText;
 	            this.airports = JSON.parse(jsonString);
 	            
-	            console.log("counter: ", counter, "festivals.results.length: ", festivals.results.length)
+	            //console.log("counter: ", counter, "festivals.results.length: ", festivals.results.length)
 	
 	            if(counter < festivals.results.length){
 	              this.onUpdate(this.airports, thisFest);
@@ -237,31 +308,58 @@
 /***/ 3:
 /***/ function(module, exports) {
 
-	var Flight = function(destination,inbound, outbound){
+	var Flight = function(depAirport){
 	  this.flights = "";
 	  this.onUpdate= null;
-	  //this.origin = origin;
-	  this.destination = destination;
-	  this.inbound = inbound;
-	  this.outbound = outbound;
+	  this.depAirport = depAirport;
 	}
 	
 	Flight.prototype = {
-	  getFlights: function(){
 	
-	    var url = "http://partners.api.skyscanner.net/apiservices/browsedates/v1.0/GB/GBP/en-GB/EDI/"+ this.destination + "/" + this.inbound + "/"+this.outbound+"?apiKey=fl366429978355658452366133652739";
-	    var request = new XMLHttpRequest();
-	    request.open("GET",url);
-	    request.onload = function(){
-	      if (request.status === 200){
-	        var jsonString = request.responseText;
-	        this.flights = JSON.parse(jsonString)
-	        this.onUpdate(this.flights)
-	      }
+	  getFlights: function(airports, fest){
 	
+	    var counter = 0;
+	    var thisAirport = airports[0]
+	    var outboundDate = new Date(fest.date)
+	    outboundDate.setDate(outboundDate.getDate() - 2)
+	    outboundDate = this.formatDate(outboundDate);
+	    var inboundDate = new Date(fest.date)
+	    inboundDate.setDate(inboundDate.getDate() +5)
+	    inboundDate = this.formatDate(inboundDate);
+	
+	    var recursiveAjax = function(thisAirport){
+	      var url = "http://partners.api.skyscanner.net/apiservices/browsedates/v1.0/GB/GBP/en-GB/"+this.depAirport+"/"+ thisAirport.code + "/" + outboundDate + "/"+ inboundDate +"?apiKey=fl366429978355658452366133652739";
+	      var request = new XMLHttpRequest();
+	      request.open("GET",url);
+	      request.onload = function(){
+	        if (request.status === 200){
+	          var jsonString = request.responseText;
+	          this.flights = JSON.parse(jsonString)
+	          if(counter < airports.length){
+	            this.onUpdate(this.flights, thisAirport, fest)
+	            counter++;
+	            recursiveAjax(thisAirport)
+	          }
+	        }
+	
+	      }.bind(this)
+	      request.send(null)
 	    }.bind(this)
-	    request.send(null)
+	    recursiveAjax(thisAirport)
+	  },
+	
+	  formatDate: function(date) {
+	  var d = new Date(date),
+	  month = '' + (d.getMonth() + 1),
+	  day = '' + d.getDate(),
+	  year = d.getFullYear();
+	
+	  if (month.length < 2) month = '0' + month;
+	  if (day.length < 2) day = '0' + day;
+	
+	  return [year, month, day].join('-');
 	  }
+	
 	};
 	module.exports = Flight;
 
@@ -271,47 +369,143 @@
 /***/ 4:
 /***/ function(module, exports) {
 
+	var styles = [{"featureType":"administrative","elementType":"labels.text.fill","stylers":[{"color":"#444444"}]},{"featureType":"landscape","elementType":"all","stylers":[{"color":"#f2f2f2"}]},{"featureType":"poi","elementType":"all","stylers":[{"visibility":"off"}]},{"featureType":"road","elementType":"all","stylers":[{"saturation":-100},{"lightness":45}]},{"featureType":"road.highway","elementType":"all","stylers":[{"visibility":"simplified"}]},{"featureType":"road.arterial","elementType":"labels.icon","stylers":[{"visibility":"off"}]},{"featureType":"transit","elementType":"all","stylers":[{"visibility":"off"}]},{"featureType":"water","elementType":"all","stylers":[{"color":"#46bcec"},{"visibility":"on"}]}]
+	
 	var View = function(){
-	  this.map = ''
-	  this.center = ''
-	}
+	
+	  this.map = '';
+	  this.center = '';
+	  this.departureAirportQuery = '';
+	  this.departureDate = '';
+	  this.returnDate = '';
+	  this.budget = '';
+	  this.userLat = '';
+	  this.userLng = '';
+	  this.submitDates = null;
+	};
 	
 	View.prototype = {
 	
-	  initialize: function(){
+	  initialize: function() {
+	   navigator.geolocation.getCurrentPosition(function(position){
+	    this.center = { lat: position.coords.latitude, lng: position.coords.longitude }
+	    var mapDiv = document.getElementById('map');
+	    this.map = new google.maps.Map(mapDiv,{
+	      center:this.center,
+	      zoom: 3,
+	      styles: styles
+	    });  
+	  })
+	 },
 	
-	    navigator.geolocation.getCurrentPosition(function(position){
+	 showFestivals: function(festivals){
+	
+	  navigator.geolocation.getCurrentPosition(function(position){
 	      this.center = { lat: position.coords.latitude, lng: position.coords.longitude }
 	      var mapDiv = document.getElementById('map');
 	      this.map = new google.maps.Map(mapDiv,{
 	        center:this.center,
-	        zoom: 6
-	      });    
-	    })
-	  },
-	
-	  showFestivals: function(festivals){
-	
-	    navigator.geolocation.getCurrentPosition(function(position){
-	      this.center = { lat: position.coords.latitude, lng: position.coords.longitude }
-	      var mapDiv = document.getElementById('map');
-	      this.map = new google.maps.Map(mapDiv,{
-	        center:this.center,
-	        zoom: 6
+	        zoom: 10,
+	        styles: styles
 	      });
 	
-	      for (festival of festivals.results){
+	        festivals.results.forEach(function(festival){
 	        var pos = { lat: festival.venue.latitude, lng: festival.venue.longitude }
+	
 	        var marker = new google.maps.Marker({
-	           position: pos,
-	           map: this.map,
+	          position: pos,
+	          map: this.map,
+	          styles: styles
 	        })
-	      }          
+	
+	        marker.addListener('click', function() {
+	          this.showDetailedView(festival);
+	          console.log("what is festival?: ", festival)
+	
+	        }.bind(this))
+	
+	      }.bind(this))
+	
+	    }.bind(this))
+	
+	  },
+	
+	  showDetailedView: function(festival){
+	
+	    var table = document.getElementById('table');
+	
+	    var row1 = table.insertRow(0);
+	    // var row2 = table.insertRow(1);
+	
+	    var cell1 = row1.insertCell(0);
+	    var cell2 = row1.insertCell(1);
+	    var cell3 = row1.insertCell(2);
+	    // var cell3 = row2.insertCell(0);
+	    // var cell4 = row2.insertCell(1);
+	
+	    cell1.innerHTML = festival.eventname;
+	    cell2.innerHTML = festival.entryprice;
+	    cell3.innerHTML = festival.date;
+	
+	    detailedView.appendChild(table);
+	
+	  },
+	
+	  showImageGrid: function(festivals){
+	
+	    var grid = document.getElementById('imageGrid');
+	
+	    festivals.forEach(function(festival){
+	
+	      var figure = document.createElement('figure');
+	
+	      var image = document.createElement('img').src = festival.largeimageurl;
+	
+	      var figureImage = figure.appendChild(image);
+	
+	      grid.appendChild(figureImage);
+	
 	    })
+	
+	  },
+	
+	  showDepartureAirports: function(){
+	
+	    var input = document.getElementById('departureAirports');
+	
+	    var departureAirportQuery = input.value
+	
 	  }
-	}
+	
+	  // displayNearbyAirports: function(departureAirports) {
+	
+	  //   var select = document.getElementById('departureAirports');
+	
+	  //   for(var i = 0; i < this.departureAirports.length; i++) {
+	
+	  //     var option = document.createElement('option');
+	
+	  //     option.innerHTML = this.departureAirports[i];
+	
+	  //     option.value = this.departureAirports[i];
+	
+	  //     select.appendChild(option);
+	
+	  //   }
+	
+	
+	  // }
+	
+	};
 	
 	module.exports = View;
+	
+	
+	
+	
+	
+	
+	
 	
 
 

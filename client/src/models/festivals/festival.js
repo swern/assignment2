@@ -1,8 +1,8 @@
-var Festival = function(){
-  this.festivals = ''
-  this.minDate = '2016-09-01'
-  this.maxDate = '2016-09-10'
-  this.onUpdate = null
+var Festival = function(minDate,maxDate){
+  this.festivals = '';
+  this.minDate = minDate;
+  this.maxDate = maxDate;
+  this.onUpdate = null;
 }
 
 Festival.prototype = {

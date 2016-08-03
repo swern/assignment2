@@ -2,18 +2,95 @@
 <html>
 <head>
   <title> Flying Festivals </title>
-  <script type="text/javascript" src = "bundle.js"></script>
   <script src="https://maps.googleapis.com/maps/api/js"></script>
+  <!--   <script type="text/javascript" src = "nouislider.js"></script> -->
+  <script type="text/javascript" src = "bundle.js"></script>
   <link rel="stylesheet" type="text/css" href="main.css">
+<!--   <link rel="stylesheet" type="text/css" href="nouislider.css"> -->
 </head>
 <body>
-  <div id= wrapper>
-    <div id= navbar></div>
-    <div id= content>
-      <div id= map></div>
-    </div>
-    <div id= infowindow></div>
-    <ul id= festivalList></ul>
-  </div>
+
+  <div id="container" class="home_background_image"></div>
+
+  <nav>
+    
+    <h1>FlightFest</h1>
+
+  </nav>
+
+  <div id="map"></div>
+
+  <div id="aside">
+
+    <h1> Festivals </h1>
+
+    <form id="form" onsubmit="return false" oninput="level.value = price.valueAsNumber">
+      <!--     <form id="form"> -->
+
+      <h2>Departure airport: </h2>
+      <!-- <select id="departureAirports"></select> -->
+
+      <input id="departureAirports" type="text" list="datalist">
+      
+      <datalist id="datalist">
+        
+      </datalist>
+
+      </input>
+
+    <br><br>
+
+    <h2>Departure date: </h2>
+    <input name="departureDate" type="date" id="departureDate"></input>
+
+    <br><br>
+
+    <h2>Return date: </h2>
+    <input name="returnDate" type="date" id="returnDate"></input>
+
+    <br><br>
+
+    <h2>Budget (£): </h2>
+    <input name="price" id="budget" type="range" min="0" max="2000" value="0" step="20"> 
+    <output for="budget" name="level">0</output>
+
+    <!--  <div id="slider"> -->
+
+    <!--    </div> -->
+
+    <!--<span id="slider-snap-value-lower"></span>
+    <span id="slider-snap-value-upper"></span> -->
+
+    <br><br><br>
+
+    <input type="submit" value="Search for festivals" id="button"></input>
+
+  </form>
+
+</div>
+
+<div id="detailedView">
+
+ <table id="table">
+   
+ </table>
+
+</div>
+
+<div id='imageGrid'>
+  
+
+</div>
+
+</div>
+
+
+
 </body>
 </html>
+
+
+
+
+
+
