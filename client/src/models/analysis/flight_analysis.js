@@ -5,8 +5,8 @@ var FlightAnalysis = function(flight){
     arrivalDate: this.flight.Dates.InboundDates[0].PartialDate,
     departureCarriers: [],
     arrivalCarriers: [],
-    departureAirport: {name: this.flight.Places[1].Name, iata: this.flight.Places[1].IataCode},
-    arrivalAirport: {name: this.flight.Places[0].Name, iata:this.flight.Places[0].IataCode},
+    departureAirport: {name: this.flight.Places[0].Name, iata: this.flight.Places[0].IataCode},
+    arrivalAirport: {name: this.flight.Places[1].Name, iata:this.flight.Places[1].IataCode},
   }
   this.newQuotes=[];
 }

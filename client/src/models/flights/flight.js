@@ -7,7 +7,6 @@ var Flight = function(depAirport){
 Flight.prototype = {
 
   getFlights: function(airports, fest){
-
     var counter = 0;
     var thisAirport = airports[0]
     var outboundDate = new Date(fest.date)

@@ -38,8 +38,8 @@ app.get("/airports/:lat/:lng", function(req,res){
     var collection = db.collection('airports');
     collection.find( 
     { 
-      'lat': { '$gte': parseInt(req.params.lat) - 1, '$lte': parseInt(req.params.lat) + 1, '$ne': 0 }, 
-      'lng': {'$gte': parseInt(req.params.lng) - 1, '$lte': parseInt(req.params.lng) + 1, '$ne': 0 } 
+      'lat': { '$gte': parseFloat(req.params.lat) - 1, '$lte': parseFloat(req.params.lat) + 1, '$ne': 0 }, 
+      'lng': {'$gte': parseFloat(req.params.lng) - 1, '$lte': parseFloat(req.params.lng) + 1, '$ne': 0 } 
     } 
     ).toArray(function(err, docs){
       res.json(docs);

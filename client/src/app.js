@@ -7,6 +7,7 @@ var FlightAnalysis = require('./models/analysis/flight_analysis');
 var FestivalAnalysis = require ('./models/analysis/festival_analysis');
 var allFestivals = [];
 var map = "";
+var styles = [{"featureType":"administrative","elementType":"labels.text.fill","stylers":[{"color":"#444444"}]},{"featureType":"landscape","elementType":"all","stylers":[{"color":"#f2f2f2"}]},{"featureType":"poi","elementType":"all","stylers":[{"visibility":"off"}]},{"featureType":"road","elementType":"all","stylers":[{"saturation":-100},{"lightness":45}]},{"featureType":"road.highway","elementType":"all","stylers":[{"visibility":"simplified"}]},{"featureType":"road.arterial","elementType":"labels.icon","stylers":[{"visibility":"off"}]},{"featureType":"transit","elementType":"all","stylers":[{"visibility":"off"}]},{"featureType":"water","elementType":"all","stylers":[{"color":"#46bcec"},{"visibility":"on"}]}]
 
 window.onload = function(){
   getUserInput()
@@ -31,19 +32,19 @@ function main(departureDate, returnDate, depAirport){
   var flight = new Flight(depAirport);
 
   airport.onUpdate = function(airports, fest){
-    fest.airports = airports;
-    flight.getFlights(airports, fest);
+    if (airports.length != 0){
+      fest.airports = airports;
+      flight.getFlights(airports, fest);
+    }
+    //console.log('festivalvenue',fest.venue,airports)
   }
 
   flight.onUpdate = function(flights, airport, fest){
     flightAnalysis = new FlightAnalysis(flights);
     flightAnalysis.populateFlightObj()
-    airport.flights = flightAnalysis.flightObj;
-    console.log(fest);
-    // view.showFestivals(fest);
-    console.log("map: ", map);
+    airport.flights = flightAnalysis.flightObj; 
+    console.log(fest);   
     addMarker(fest, map);
-
   }
   getFlightFestCombo(festival, view, airport, flight);
 }
@@ -120,7 +121,8 @@ function initialize(){
     var mapDiv = document.getElementById('map');
     map = new google.maps.Map(mapDiv,{
       center:center,
-      zoom: 3
+      zoom: 3,
+      styles: styles
     });  
   })
 
@@ -149,19 +151,43 @@ function showDetailedView(festival) {
 
   var table = document.getElementById('table');
 
-  var row1 = table.insertRow(0);
-  // var row2 = table.insertRow(1);
+  var header = table.createTHead();
+
+  var row1 = header.insertRow(0);
 
   var cell1 = row1.insertCell(0);
   var cell2 = row1.insertCell(1);
   var cell3 = row1.insertCell(2);
-  
-  // var cell3 = row2.insertCell(0);
-  // var cell4 = row2.insertCell(1);
+  var cell4 = row1.insertCell(3);
+
+  cell1.innerHTML = "<h2>Festival</h2>"
+  cell2.innerHTML = "<h2>Festival description</h2>"
+  cell3.innerHTML = "<h2>Festival ticket price</h2>"
+  cell4.innerHTML = "<h2>Festival start date</h2>"
+
+  var row2 = table.insertRow(1);
+
+  var cell1 = row2.insertCell(0);
+  var cell2 = row2.insertCell(1);
+  var cell3 = row2.insertCell(2);
+  var cell4 = row2.insertCell(3);
+  var air = festival.airports
+
+  for (i = 0; i < air.length; i++) {
+    // console.log(i) 
+    console.log(festival);
+    if (air[i].flights){
+    var newCell1 = row1.insertCell(i+4);
+    newCell1.innerHTML = "<h2>Flight details</h2>"
+    var newCell2 = row2.insertCell(i+4);
+    newCell2.innerHTML = "Flight price: £" + air[i].flights.quote.MinPrice + "<br />" + "Departure date: " + air[i].flights.departureDate + "<br />" + "Departure airport: " + air[i].flights.departureAirport.name + "<br />" + "Departure carrier: " + air[i].flights.departureCarriers[0] + "<br />" + "Arrival date: " + air[i].flights.arrivalDate + "<br />" + "Arrival airport: " + air[i].flights.arrivalAirport.name + "<br />" + "Arrival carrier: " + air[i].flights.arrivalCarriers[0]
+    }
+  }
 
   cell1.innerHTML = festival.eventname;
-  cell2.innerHTML = festival.entryprice;
-  cell3.innerHTML = festival.date;
+  cell2.innerHTML = festival.description;
+  cell3.innerHTML = festival.entryprice;
+  cell4.innerHTML = festival.date;
 
 
   detailedView.appendChild(table);

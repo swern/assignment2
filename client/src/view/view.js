@@ -43,13 +43,12 @@ View.prototype = {
 
         var marker = new google.maps.Marker({
           position: pos,
-          map: this.map,
-          styles: styles
+          map: this.map
         })
 
         marker.addListener('click', function() {
           this.showDetailedView(festival);
-          console.log("what is festival?: ", festival)
+          // console.log("what is festival?: ", festival)
 
         }.bind(this))
 

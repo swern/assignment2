@@ -1,90 +1,67 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title> Flying Festivals </title>
+  <title> flightfest </title>
   <script src="https://maps.googleapis.com/maps/api/js"></script>
-  <!--   <script type="text/javascript" src = "nouislider.js"></script> -->
   <script type="text/javascript" src = "bundle.js"></script>
   <link rel="stylesheet" type="text/css" href="main.css">
-<!--   <link rel="stylesheet" type="text/css" href="nouislider.css"> -->
+  <link href='https://fonts.googleapis.com/css?family=Questrial' rel='stylesheet' type='text/css'>
+  <link href='https://fonts.googleapis.com/css?family=Julius+Sans+One' rel='stylesheet' type='text/css'>
+  <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet">
 </head>
 <body>
 
-  <div id="container" class="home_background_image"></div>
+<!-- <div id="map"></div> -->
 
-  <nav>
-    
-    <h1>FlightFest</h1>
+<div id="formDiv">
+  <form id="form">
 
-  </nav>
+  <h1>flight<span id="fest">fest</span></h1>
 
-  <div id="map"></div>
-
-  <div id="aside">
-
-    <h1> Festivals </h1>
-
-    <form id="form" onsubmit="return false" oninput="level.value = price.valueAsNumber">
-      <!--     <form id="form"> -->
-
-      <h2>Departure airport: </h2>
-      <!-- <select id="departureAirports"></select> -->
-
-      <input id="departureAirports" type="text" list="datalist">
-      
-      <datalist id="datalist">
-        
-      </datalist>
-
-      </input>
-
-    <br><br>
-
-    <h2>Departure date: </h2>
-    <input name="departureDate" type="date" id="departureDate"></input>
-
-    <br><br>
-
-    <h2>Return date: </h2>
-    <input name="returnDate" type="date" id="returnDate"></input>
-
-    <br><br>
-
-    <h2>Budget (£): </h2>
-    <input name="price" id="budget" type="range" min="0" max="2000" value="0" step="20"> 
-    <output for="budget" name="level">0</output>
-
-    <!--  <div id="slider"> -->
-
-    <!--    </div> -->
-
-    <!--<span id="slider-snap-value-lower"></span>
-    <span id="slider-snap-value-upper"></span> -->
-
-    <br><br><br>
-
-    <input type="submit" value="Search for festivals" id="button"></input>
-
+  <div id="space"></div>
+    <table>
+      <tr>
+        <th><h2>departure airport: </h2></th>
+        <th><h2>departure date: </h2></th>
+        <th><h2>return date: </h2></th>
+      </tr>
+      <tr>
+        <td>
+        <input id="departureAirports" type="text" list="datalist" placeholder="Your departure airport">
+        <datalist id="datalist"></datalist>
+        </td>
+        <td>
+          <input name="departureDate" type="date" id="departureDate">
+        </td>
+        <td>
+          <input name="returnDate" type="date" id="returnDate"></input>
+        </td>
+        <td>
+          <input type="submit" value="search for festivals" id="button">
+        </td>
+      </tr>
+    </table>
   </form>
+  </div>
 
+<div align="center">
+  <div id="map"></div>
 </div>
 
-<div id="detailedView">
+  <div id="detailedView">
+    <table id="table">
+      
+<!--       <th><h2>Festival</h2></th>
+      <th><h2>Festival description</h2></th>
+      <th><h2>Festival ticket price</h2></th>
+      <th><h2>Festival start date</h2></th> -->
 
- <table id="table">
-   
- </table>
+      
+
+    </table>
+  </div>
 
 </div>
-
-<div id='imageGrid'>
-  
-
-</div>
-
-</div>
-
-
 
 </body>
 </html>

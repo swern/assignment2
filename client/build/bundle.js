@@ -54,6 +54,7 @@
 	var FestivalAnalysis = __webpack_require__ (144);
 	var allFestivals = [];
 	var map = "";
+	var styles = [{"featureType":"administrative","elementType":"labels.text.fill","stylers":[{"color":"#444444"}]},{"featureType":"landscape","elementType":"all","stylers":[{"color":"#f2f2f2"}]},{"featureType":"poi","elementType":"all","stylers":[{"visibility":"off"}]},{"featureType":"road","elementType":"all","stylers":[{"saturation":-100},{"lightness":45}]},{"featureType":"road.highway","elementType":"all","stylers":[{"visibility":"simplified"}]},{"featureType":"road.arterial","elementType":"labels.icon","stylers":[{"visibility":"off"}]},{"featureType":"transit","elementType":"all","stylers":[{"visibility":"off"}]},{"featureType":"water","elementType":"all","stylers":[{"color":"#46bcec"},{"visibility":"on"}]}]
 	
 	window.onload = function(){
 	  getUserInput()
@@ -78,19 +79,19 @@
 	  var flight = new Flight(depAirport);
 	
 	  airport.onUpdate = function(airports, fest){
-	    fest.airports = airports;
-	    flight.getFlights(airports, fest);
+	    if (airports.length != 0){
+	      fest.airports = airports;
+	      flight.getFlights(airports, fest);
+	    }
+	    //console.log('festivalvenue',fest.venue,airports)
 	  }
 	
 	  flight.onUpdate = function(flights, airport, fest){
 	    flightAnalysis = new FlightAnalysis(flights);
 	    flightAnalysis.populateFlightObj()
-	    airport.flights = flightAnalysis.flightObj;
-	    console.log(fest);
-	    // view.showFestivals(fest);
-	    console.log("map: ", map);
+	    airport.flights = flightAnalysis.flightObj; 
+	    console.log(fest);   
 	    addMarker(fest, map);
-	
 	  }
 	  getFlightFestCombo(festival, view, airport, flight);
 	}
@@ -167,7 +168,8 @@
 	    var mapDiv = document.getElementById('map');
 	    map = new google.maps.Map(mapDiv,{
 	      center:center,
-	      zoom: 3
+	      zoom: 3,
+	      styles: styles
 	    });  
 	  })
 	
@@ -196,19 +198,43 @@
 	
 	  var table = document.getElementById('table');
 	
-	  var row1 = table.insertRow(0);
-	  // var row2 = table.insertRow(1);
+	  var header = table.createTHead();
+	
+	  var row1 = header.insertRow(0);
 	
 	  var cell1 = row1.insertCell(0);
 	  var cell2 = row1.insertCell(1);
 	  var cell3 = row1.insertCell(2);
-	  
-	  // var cell3 = row2.insertCell(0);
-	  // var cell4 = row2.insertCell(1);
+	  var cell4 = row1.insertCell(3);
+	
+	  cell1.innerHTML = "<h2>Festival</h2>"
+	  cell2.innerHTML = "<h2>Festival description</h2>"
+	  cell3.innerHTML = "<h2>Festival ticket price</h2>"
+	  cell4.innerHTML = "<h2>Festival start date</h2>"
+	
+	  var row2 = table.insertRow(1);
+	
+	  var cell1 = row2.insertCell(0);
+	  var cell2 = row2.insertCell(1);
+	  var cell3 = row2.insertCell(2);
+	  var cell4 = row2.insertCell(3);
+	  var air = festival.airports
+	
+	  for (i = 0; i < air.length; i++) {
+	    // console.log(i) 
+	    console.log(festival);
+	    if (air[i].flights){
+	    var newCell1 = row1.insertCell(i+4);
+	    newCell1.innerHTML = "<h2>Flight details</h2>"
+	    var newCell2 = row2.insertCell(i+4);
+	    newCell2.innerHTML = "Flight price: £" + air[i].flights.quote.MinPrice + "<br />" + "Departure date: " + air[i].flights.departureDate + "<br />" + "Departure airport: " + air[i].flights.departureAirport.name + "<br />" + "Departure carrier: " + air[i].flights.departureCarriers[0] + "<br />" + "Arrival date: " + air[i].flights.arrivalDate + "<br />" + "Arrival airport: " + air[i].flights.arrivalAirport.name + "<br />" + "Arrival carrier: " + air[i].flights.arrivalCarriers[0]
+	    }
+	  }
 	
 	  cell1.innerHTML = festival.eventname;
-	  cell2.innerHTML = festival.entryprice;
-	  cell3.innerHTML = festival.date;
+	  cell2.innerHTML = festival.description;
+	  cell3.innerHTML = festival.entryprice;
+	  cell4.innerHTML = festival.date;
 	
 	
 	  detailedView.appendChild(table);
@@ -263,7 +289,7 @@
 	Airport.prototype = {
 	
 	  getAirports: function(festivals) {
-	    console.log("Festivals: ", festivals.results.length);
+	    // console.log("Festivals: ", festivals.results.length);
 	    var counter = 0;
 	
 	    var thisFest = festivals.results[0];
@@ -271,6 +297,7 @@
 	    var recursiveAjax = function(thisFest){
 	      
 	      var url = "http://localhost:3000/airports/"+thisFest.venue.latitude+"/"+thisFest.venue.longitude;
+	
 	      var request = new XMLHttpRequest();
 	      request.open("GET",url);
 	      request.setRequestHeader("Content-Type", "application/json")
@@ -279,9 +306,12 @@
 	         if (request.status === 200){
 	            thisFest = festivals.results[counter];
 	            var jsonString = request.responseText;
+	            //console.log(jsonString)
 	            this.airports = JSON.parse(jsonString);
-	            
+	            //console.log(thisFest.venue.latitude, this.airports)
+	            // console.log("venuelatitude",thisFest.venue.latitude,this.airports )
 	            //console.log("counter: ", counter, "festivals.results.length: ", festivals.results.length)
+	           this.airports = this.airportFilter(thisFest);
 	
 	            if(counter < festivals.results.length){
 	              this.onUpdate(this.airports, thisFest);
@@ -297,6 +327,19 @@
 	
 	    recursiveAjax(thisFest);
 	
+	  },
+	
+	  airportFilter: function(thisFest){
+	    var interimArray = []
+	    var finalArray = []
+	    this.airports.forEach(function(airport){
+	      if(thisFest.venue.latitude + 1 > airport.lat && thisFest.venue.latitude - 1 < airport.lat){interimArray.push(airport)}
+	    })
+	    interimArray.forEach(function(airport){
+	      if(thisFest.venue.longitude + 1 > airport.lng && thisFest.venue.longitude - 1 < airport.lng){finalArray.push(airport)}
+	    })
+	    return finalArray
+	    // console.log("venuelatitude",thisFest.venue.latitude,finalArray)
 	  }
 	
 	};
@@ -317,7 +360,6 @@
 	Flight.prototype = {
 	
 	  getFlights: function(airports, fest){
-	
 	    var counter = 0;
 	    var thisAirport = airports[0]
 	    var outboundDate = new Date(fest.date)
@@ -414,13 +456,12 @@
 	
 	        var marker = new google.maps.Marker({
 	          position: pos,
-	          map: this.map,
-	          styles: styles
+	          map: this.map
 	        })
 	
 	        marker.addListener('click', function() {
 	          this.showDetailedView(festival);
-	          console.log("what is festival?: ", festival)
+	          // console.log("what is festival?: ", festival)
 	
 	        }.bind(this))
 	
@@ -730,8 +771,8 @@
 	    arrivalDate: this.flight.Dates.InboundDates[0].PartialDate,
 	    departureCarriers: [],
 	    arrivalCarriers: [],
-	    departureAirport: {name: this.flight.Places[1].Name, iata: this.flight.Places[1].IataCode},
-	    arrivalAirport: {name: this.flight.Places[0].Name, iata:this.flight.Places[0].IataCode},
+	    departureAirport: {name: this.flight.Places[0].Name, iata: this.flight.Places[0].IataCode},
+	    arrivalAirport: {name: this.flight.Places[1].Name, iata:this.flight.Places[1].IataCode},
 	  }
 	  this.newQuotes=[];
 	}
