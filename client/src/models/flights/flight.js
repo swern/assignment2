@@ -3,7 +3,7 @@ var Flight = function(depAirport){
   this.onUpdate= null;
   this.depAirport = depAirport;
 }
-
+//git test
 Flight.prototype = {
 
   getFlights: function(airports, fest){

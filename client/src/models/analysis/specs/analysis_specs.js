@@ -338,11 +338,11 @@ describe('Analysis', function(){
   })  
   it('can get departure airport from flightObj',function(){
     flightAnalysis = new FlightAnalysis(flightData)
-    assert.equal('Naples International',flightAnalysis.flightObj.departureAirport.name)
+    assert.equal('London Gatwick',flightAnalysis.flightObj.departureAirport.name)
   }) 
   it('can get iata code of arrival airport from flightObj',function(){
     flightAnalysis = new FlightAnalysis(flightData)
-    assert.equal('LGW',flightAnalysis.flightObj.arrivalAirport.iata)
+    assert.equal('NAP',flightAnalysis.flightObj.arrivalAirport.iata)
   })
   it('can make departure arrival flight combinations', function(){
     
